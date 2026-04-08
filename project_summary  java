@@ -1,0 +1,209 @@
+# 🏙️ Smart City Service Portal — Project Summary
+
+## Overview
+
+A **full-stack Java web application** built as a **B.Tech 2nd Year Java PBL (Project-Based Learning)** submission. It simulates a real-world municipal service platform where citizens can interact with city services digitally, and admins can manage everything from a central dashboard.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Language** | Java 11 |
+| **Web Framework** | Java Servlet + JSP (MVC) |
+| **View Layer** | JSP + JSTL 1.2 |
+| **Database** | MySQL 8.0+ |
+| **DB Access** | JDBC (PreparedStatement) |
+| **Build Tool** | Maven 3.6+ |
+| **Server** | Apache Tomcat 9/10 |
+| **Styling** | Vanilla CSS (Dark Mode UI) |
+| **Session Mgmt** | HttpSession |
+| **Security** | Role-Based Access Control (ADMIN / CITIZEN) |
+
+---
+
+## 🏗️ Architecture — MVC Pattern
+
+```
+Browser Request
+     ↓
+  Servlet (Controller)        ← Handles HTTP logic, routing, session checks
+     ↓
+  DAO (Model/DB Layer)        ← Executes SQL via JDBC, returns Java objects
+     ↓  ↑
+  MySQL Database              ← smartcity_db with 5 tables
+     ↓
+  JSP (View)                  ← Renders HTML using JSTL / EL
+     ↓
+Browser Response
+```
+
+---
+
+## 📁 Complete File Map
+
+### Backend — Java Sources (`src/main/java/`)
+
+#### 📦 `model/` — POJOs (5 classes)
+| File | Purpose |
+|---|---|
+| `User.java` | id, name, email, password, phone, address, role |
+| `Complaint.java` | complaint_id, user_id, category, description, location, status, date |
+| `Appointment.java` | appointment_id, user_id, doctor_name, specialization, date, time, status, notes |
+| `Bill.java` | bill_id, user_id, type, amount, due_date, status |
+| `Announcement.java` | id, title, content, category, posted_by, created_at |
+
+#### 📦 `dao/` — Data Access Layer (6 classes)
+| File | Key Operations |
+|---|---|
+| `DBConnection.java` | Singleton JDBC connection (`smartcity_db`, root user) |
+| `UserDAO.java` | register, login (email+password), getUserById, getAllUsers |
+| `ComplaintDAO.java` | addComplaint, getByUser, getAll, updateStatus |
+| `AppointmentDAO.java` | bookAppointment, getByUser, getAll, updateStatus (Confirm/Cancel) |
+| `BillDAO.java` | getByUser, getAll, markAsPaid, issueBill |
+| `AnnouncementDAO.java` | getAll, addAnnouncement, deleteAnnouncement |
+
+#### 📦 `servlet/` — Controller Layer (8 servlets)
+| File | URL Mapping | Responsibility |
+|---|---|---|
+| `LoginServlet.java` | `/login` | Authenticate user, set session, redirect by role |
+| `RegisterServlet.java` | `/register` | Validate & insert new CITIZEN user |
+| `LogoutServlet.java` | `/logout` | Invalidate session, redirect to login |
+| `ComplaintServlet.java` | `/complaints` | Submit new complaint; list user complaints |
+| `AppointmentServlet.java` | `/appointments` | Book appointment; list; update status (admin) |
+| `BillServlet.java` | `/bills` | View bills; pay bill (citizen); issue bill (admin) |
+| `AnnouncementServlet.java` | `/announcements` | View; post/delete (admin) |
+| `AdminServlet.java` | `/admin` | Admin dashboard — stats, user list |
+
+---
+
+### Frontend — Webapp (`src/main/webapp/`)
+
+#### 🌐 Public Pages
+| File | Description |
+|---|---|
+| `index.jsp` | Landing/home page with hero section, services overview |
+| `login.jsp` | Login form — email + password |
+| `register.jsp` | Registration form with validation |
+| `error.jsp` | Generic error display page |
+
+#### 👤 Citizen Module (`citizen/`)
+| File | Description |
+|---|---|
+| `dashboard.jsp` | Citizen home — stats cards, quick action links |
+| `profile.jsp` | View personal profile details |
+| `complaints.jsp` | List of the citizen's complaints with status badges |
+| `new-complaint.jsp` | Form: category, description, location |
+| `appointments.jsp` | List of the citizen's appointments |
+| `book-appointment.jsp` | Form: doctor name, specialization, date, time, notes |
+| `bills.jsp` | Utility bills with "Pay Now" button |
+| `announcements.jsp` | Read-only city announcements feed |
+
+#### 🛡️ Admin Module (`admin/`)
+| File | Description |
+|---|---|
+| `dashboard.jsp` | Live stats: total users, complaints, appointments, bills |
+| `users.jsp` | List of all registered citizens |
+| `complaints.jsp` | All complaints — update status dropdown (Pending → In Progress → Resolved) |
+| `appointments.jsp` | All appointments — Confirm / Cancel action buttons |
+| `bills.jsp` | All bills — issue new bill form + view existing |
+| `announcements.jsp` | Post new announcement + delete existing |
+
+#### 🎨 Assets
+| Path | Description |
+|---|---|
+| `css/style.css` | ~13 KB — full dark-mode theme, glassmorphism cards, responsive grid |
+| `images/hero-bg.png` | ~1.1 MB — landing page hero background |
+| `images/services-bg.png` | ~827 KB — services section background |
+| `images/grid-bg.png` | ~828 KB — grid pattern background |
+| `WEB-INF/web.xml` | Servlet URL mappings, welcome file config |
+
+---
+
+## 🗄️ Database Schema — `smartcity_db`
+
+### 5 Tables
+
+```sql
+users         (id, name, email, password, phone, address, role[ADMIN|CITIZEN], created_at)
+complaints    (complaint_id, user_id→users, category, description, location, status, date)
+appointments  (appointment_id, user_id→users, doctor_name, specialization, date, time, status, notes, created_at)
+bills         (bill_id, user_id→users, type, amount, due_date, status[Unpaid|Paid], issued_at)
+announcements (id, title, content, category, posted_by→users, created_at)
+```
+
+### Seeded Sample Data
+- **1 Admin** — `admin@smartcity.com` / `admin123`
+- **3 Citizens** — `ravi@email.com`, `priya@email.com`, `amit@email.com` (all `pass123`)
+- **4 complaints**, **3 appointments**, **6 bills**, **4 announcements** pre-loaded
+
+---
+
+## ✨ Features
+
+### Citizen Module
+- 🔐 Register & Login with session-based auth
+- 📋 Submit & track complaints (Road, Water, Electricity, Garbage, Other)
+- 🏥 Book hospital appointments with doctor + time slot
+- 💡 View utility bills (Electricity, Water, Property Tax, Sewage) & pay them
+- 📢 Read city announcements
+- 👤 View personal profile
+
+### Admin Module
+- 📊 Dashboard with live statistics counters
+- 👥 View all registered citizens
+- 📋 Update complaint status (Pending → In Progress → Resolved)
+- 🏥 Confirm or Cancel citizen appointments
+- 💡 Issue new bills to specific citizens
+- 📢 Post & delete city announcements
+
+---
+
+## 🔑 Login Credentials
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@smartcity.com | admin123 |
+| Citizen | ravi@email.com | pass123 |
+| Citizen | priya@email.com | pass123 |
+| Citizen | amit@email.com | pass123 |
+
+---
+
+## 🚀 Deployment
+
+1. **Setup DB**: Run `sql/smartcity.sql` in MySQL Workbench
+2. **Configure**: Update `DBConnection.java` with your MySQL password
+3. **Build**: `mvn clean package` → generates `target/SmartCityPortal.war`
+4. **Deploy**: Copy `.war` to `TOMCAT_HOME/webapps/`, start Tomcat
+5. **Access**: `http://localhost:8080/SmartCityPortal/`
+
+---
+
+## 📦 Maven Dependencies
+
+| Dependency | Version | Purpose |
+|---|---|---|
+| `javax.servlet-api` | 4.0.1 | Servlet API (provided by Tomcat) |
+| `javax.servlet.jsp-api` | 2.3.3 | JSP API (provided by Tomcat) |
+| `javax.servlet:jstl` | 1.2 | JSP Standard Tag Library |
+| `mysql-connector-java` | 8.0.33 | JDBC Driver for MySQL |
+
+---
+
+## 📊 File Count Summary
+
+| Category | Count |
+|---|---|
+| Java Model classes | 5 |
+| Java DAO classes | 6 |
+| Java Servlet controllers | 8 |
+| Citizen JSP views | 8 |
+| Admin JSP views | 6 |
+| Public JSP pages | 4 |
+| CSS files | 1 |
+| Image assets | 3 |
+| SQL files | 1 |
+| Config files (pom.xml, web.xml) | 2 |
+| **Total source files** | **~44** |
