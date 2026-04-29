@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS complaints (
     location     VARCHAR(255) NOT NULL,
     status       ENUM('Pending','In Progress','Resolved') DEFAULT 'Pending',
     date         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    latitude   DOUBLE DEFAULT NULL,
+    longitude  DOUBLE DEFAULT NULL,
+    image_path VARCHAR(500) DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -90,11 +93,11 @@ INSERT INTO users (name, email, password, phone, address, role) VALUES
 ('Amit Kumar',   'amit@email.com',   'pass123', '9333333333', '78 Lake View, Block C', 'CITIZEN');
 
 -- Sample complaints
-INSERT INTO complaints (user_id, category, description, location, status) VALUES
-(2, 'Road',        'Large pothole on main road causing accidents', 'MG Road Near School', 'In Progress'),
-(3, 'Water',       'No water supply since 3 days', '45 Park Street', 'Pending'),
-(4, 'Electricity', 'Frequent power cuts in our area', 'Block C, Sector 5', 'Pending'),
-(2, 'Garbage',     'Garbage not collected for a week', 'MG Road Colony', 'Resolved');
+INSERT INTO complaints (user_id, category, description, location, status, latitude, longitude) VALUES
+(2, 'Road',        'Large pothole on main road causing accidents', 'MG Road Near School', 'In Progress', 28.6139, 77.2090),
+(3, 'Water',       'No water supply since 3 days', '45 Park Street', 'Pending', 28.6229, 77.2195),
+(4, 'Electricity', 'Frequent power cuts in our area', 'Block C, Sector 5', 'Pending', 28.6304, 77.2177),
+(2, 'Garbage',     'Garbage not collected for a week', 'MG Road Colony', 'Resolved', 28.6100, 77.2300);
 
 -- Sample appointments
 INSERT INTO appointments (user_id, doctor_name, specialization, date, time, status) VALUES
